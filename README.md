@@ -1,7 +1,7 @@
 # Terraria Pre-Alpha Decompilation
 ---
 a decompilation of the 2011 pre alpha of terraria.
-<br>/
+<br>
 this is nothing like the final game and should not be used as an alternative to piracy.
 ## todo:
 ---
