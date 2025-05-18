@@ -12,9 +12,9 @@ using System;
 using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("Terraria")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03f6e9c392694afdbd64fca21dd979b4fdf2063e")]
 [assembly: System.Reflection.AssemblyProductAttribute("Terraria")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Terraria")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
