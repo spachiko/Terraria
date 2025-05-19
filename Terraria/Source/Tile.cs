@@ -1,18 +1,15 @@
-﻿namespace Terraria
-{
-    using System;
+﻿namespace Terraria;
 
-    public class Tile
-    {
-        public bool active = true;
-        public byte frameNumber;
-        public short frameX;
-        public short frameY;
-        public bool lighted = false;
-        public byte type;
-        public byte wall;
-        public byte wallFrameNumber;
-        public byte wallFrameX;
-        public byte wallFrameY;
-    }
+public class Tile
+{
+    public bool Active = true;
+    public byte FrameNumber;
+    public short FrameX;
+    public short FrameY;
+    public bool Lighted = false;
+    public byte Type;
+    public byte Wall;
+    public byte WallFrameNumber;
+    public byte WallFrameX;
+    public byte WallFrameY;
 }

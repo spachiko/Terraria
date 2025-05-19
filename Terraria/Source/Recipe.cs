@@ -1,281 +1,270 @@
-﻿namespace Terraria
+﻿namespace Terraria;
+
+public class Recipe
 {
-    using System;
+    public static readonly int MaxRecipes = 100;
+    public static readonly int MaxRequirements = 10;
+    private static Recipe newRecipe = new Recipe();
+    private static int numRecipes;
+    public readonly Item CreateItem = new Item();
+    public readonly Item[] RequiredItem = new Item[MaxRecipes];
 
-    public class Recipe
+    public Recipe()
     {
-        public Item createItem = new Item();
-        public static int maxRecipes = 100;
-        public static int maxRequirements = 10;
-        private static Recipe newRecipe = new Recipe();
-        public static int numRecipes = 0;
-        public Item[] requiredItem = new Item[maxRecipes];
+        for (var i = 0; i < MaxRequirements; i++)
+            RequiredItem[i] = new Item();
+    }
 
-        public Recipe()
+    private static void AddRecipe()
+    {
+        Main.Recipe[numRecipes] = newRecipe;
+        newRecipe = new Recipe();
+        numRecipes++;
+    }
+
+    public void Create()
+    {
+        for (var i = 0; i < MaxRequirements; i++)
         {
-            for (int i = 0; i < maxRequirements; i++)
+            if (RequiredItem[i].Type == 0)
+                break;
+
+            var stack = RequiredItem[i].Stack;
+            for (var j = 0; j < 40; j++)
             {
-                this.requiredItem[i] = new Item();
+                if (Main.Player[Main.MyPlayer].Inventory[j].IsTheSameAs(RequiredItem[i]))
+                {
+                    if (Main.Player[Main.MyPlayer].Inventory[j].Stack > stack)
+                    {
+                        Item item1 = Main.Player[Main.MyPlayer].Inventory[j];
+                        item1.Stack -= stack;
+                        stack = 0;
+                    }
+                    else
+                    {
+                        stack -= Main.Player[Main.MyPlayer].Inventory[j].Stack;
+                        Main.Player[Main.MyPlayer].Inventory[j] = new Item();
+                    }
+                }
+
+                if (stack <= 0)
+                    break;
             }
         }
 
-        private static void addRecipe()
-        {
-            Main.recipe[numRecipes] = newRecipe;
-            newRecipe = new Recipe();
-            numRecipes++;
-        }
+        FindRecipes();
+    }
 
-        public void Create()
+    public static void FindRecipes()
+    {
+        int num3;
+        var num = Main.AvailableRecipe[Main.focusRecipe];
+        var num2 = Main.AvailableRecipeY[Main.focusRecipe];
+        for (num3 = 0; num3 < MaxRecipes; num3++)
+            Main.AvailableRecipe[num3] = 0;
+
+        Main.numAvailableRecipes = 0;
+        for (num3 = 0; num3 < MaxRecipes; num3++)
         {
-            for (int i = 0; i < maxRequirements; i++)
+            if (Main.Recipe[num3].CreateItem.Type == 0)
+                break;
+
+            var flag = true;
+            for (var i = 0; i < MaxRequirements; i++)
             {
-                if (this.requiredItem[i].type == 0)
-                {
+                if (Main.Recipe[num3].RequiredItem[i].Type == 0)
                     break;
-                }
-                int stack = this.requiredItem[i].stack;
-                for (int j = 0; j < 40; j++)
+
+                var stack = Main.Recipe[num3].RequiredItem[i].Stack;
+                for (var j = 0; j < 40; j++)
                 {
-                    if (Main.player[Main.myPlayer].inventory[j].IsTheSameAs(this.requiredItem[i]))
-                    {
-                        if (Main.player[Main.myPlayer].inventory[j].stack > stack)
-                        {
-                            Item item1 = Main.player[Main.myPlayer].inventory[j];
-                            item1.stack -= stack;
-                            stack = 0;
-                        }
-                        else
-                        {
-                            stack -= Main.player[Main.myPlayer].inventory[j].stack;
-                            Main.player[Main.myPlayer].inventory[j] = new Item();
-                        }
-                    }
+                    if (
+                        Main.Player[Main.MyPlayer]
+                        .Inventory[j]
+                        .IsTheSameAs(Main.Recipe[num3].RequiredItem[i])
+                    )
+                        stack -= Main.Player[Main.MyPlayer].Inventory[j].Stack;
+
                     if (stack <= 0)
-                    {
                         break;
-                    }
                 }
-            }
-            FindRecipes();
-        }
 
-        public static void FindRecipes()
-        {
-            int num3;
-            int num = Main.availableRecipe[Main.focusRecipe];
-            float num2 = Main.availableRecipeY[Main.focusRecipe];
-            for (num3 = 0; num3 < maxRecipes; num3++)
-            {
-                Main.availableRecipe[num3] = 0;
-            }
-            Main.numAvailableRecipes = 0;
-            for (num3 = 0; num3 < maxRecipes; num3++)
-            {
-                if (Main.recipe[num3].createItem.type == 0)
+                if (stack > 0)
                 {
+                    flag = false;
                     break;
                 }
-                bool flag = true;
-                for (int i = 0; i < maxRequirements; i++)
-                {
-                    if (Main.recipe[num3].requiredItem[i].type == 0)
-                    {
-                        break;
-                    }
-                    int stack = Main.recipe[num3].requiredItem[i].stack;
-                    for (int j = 0; j < 40; j++)
-                    {
-                        if (
-                            Main.player[Main.myPlayer]
-                                .inventory[j]
-                                .IsTheSameAs(Main.recipe[num3].requiredItem[i])
-                        )
-                        {
-                            stack -= Main.player[Main.myPlayer].inventory[j].stack;
-                        }
-                        if (stack <= 0)
-                        {
-                            break;
-                        }
-                    }
-                    if (stack > 0)
-                    {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (flag)
-                {
-                    Main.availableRecipe[Main.numAvailableRecipes] = num3;
-                    Main.numAvailableRecipes++;
-                }
             }
-            num3 = 0;
-            while (num3 < Main.numAvailableRecipes)
+
+            if (flag)
             {
-                if (num == Main.availableRecipe[num3])
-                {
-                    Main.focusRecipe = num3;
-                    break;
-                }
-                num3++;
-            }
-            if (Main.focusRecipe >= Main.numAvailableRecipes)
-            {
-                Main.focusRecipe = Main.numAvailableRecipes - 1;
-            }
-            if (Main.focusRecipe < 0)
-            {
-                Main.focusRecipe = 0;
-            }
-            float num7 = Main.availableRecipeY[Main.focusRecipe] - num2;
-            for (num3 = 0; num3 < maxRecipes; num3++)
-            {
-                Main.availableRecipeY[num3] -= num7;
+                Main.AvailableRecipe[Main.numAvailableRecipes] = num3;
+                Main.numAvailableRecipes++;
             }
         }
 
-        public static void SetupRecipes()
+        num3 = 0;
+        while (num3 < Main.numAvailableRecipes)
         {
-            newRecipe.createItem.SetDefaults(8);
-            newRecipe.createItem.stack = 3;
-            newRecipe.requiredItem[0].SetDefaults(0x17);
-            newRecipe.requiredItem[0].stack = 2;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x1a);
-            newRecipe.createItem.stack = 4;
-            newRecipe.requiredItem[0].SetDefaults(3);
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x19);
-            newRecipe.requiredItem[0].SetDefaults(9);
-            newRecipe.requiredItem[0].stack = 5;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x18);
-            newRecipe.requiredItem[0].SetDefaults(9);
-            newRecipe.requiredItem[0].stack = 7;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(20);
-            newRecipe.requiredItem[0].SetDefaults(12);
-            newRecipe.requiredItem[0].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Copper Pickaxe");
-            newRecipe.requiredItem[0].SetDefaults(20);
-            newRecipe.requiredItem[0].stack = 12;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 4;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Copper Axe");
-            newRecipe.requiredItem[0].SetDefaults(20);
-            newRecipe.requiredItem[0].stack = 9;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Copper Hammer");
-            newRecipe.requiredItem[0].SetDefaults(20);
-            newRecipe.requiredItem[0].stack = 10;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Copper Broadsword");
-            newRecipe.requiredItem[0].SetDefaults(20);
-            newRecipe.requiredItem[0].stack = 8;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Copper Shortsword");
-            newRecipe.requiredItem[0].SetDefaults(20);
-            newRecipe.requiredItem[0].stack = 7;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x13);
-            newRecipe.requiredItem[0].SetDefaults(13);
-            newRecipe.requiredItem[0].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Gold Pickaxe");
-            newRecipe.requiredItem[0].SetDefaults(0x13);
-            newRecipe.requiredItem[0].stack = 12;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 4;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Gold Axe");
-            newRecipe.requiredItem[0].SetDefaults(0x13);
-            newRecipe.requiredItem[0].stack = 9;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Gold Hammer");
-            newRecipe.requiredItem[0].SetDefaults(0x13);
-            newRecipe.requiredItem[0].stack = 10;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Gold Broadsword");
-            newRecipe.requiredItem[0].SetDefaults(0x13);
-            newRecipe.requiredItem[0].stack = 8;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Gold Shortsword");
-            newRecipe.requiredItem[0].SetDefaults(0x13);
-            newRecipe.requiredItem[0].stack = 7;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x16);
-            newRecipe.requiredItem[0].SetDefaults(11);
-            newRecipe.requiredItem[0].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(1);
-            newRecipe.requiredItem[0].SetDefaults(0x16);
-            newRecipe.requiredItem[0].stack = 12;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(10);
-            newRecipe.requiredItem[0].SetDefaults(0x16);
-            newRecipe.requiredItem[0].stack = 9;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(7);
-            newRecipe.requiredItem[0].SetDefaults(0x16);
-            newRecipe.requiredItem[0].stack = 10;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(4);
-            newRecipe.requiredItem[0].SetDefaults(0x16);
-            newRecipe.requiredItem[0].stack = 8;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(6);
-            newRecipe.requiredItem[0].SetDefaults(0x16);
-            newRecipe.requiredItem[0].stack = 7;
-            addRecipe();
-            newRecipe.createItem.SetDefaults(0x15);
-            newRecipe.requiredItem[0].SetDefaults(14);
-            newRecipe.requiredItem[0].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Silver Pickaxe");
-            newRecipe.requiredItem[0].SetDefaults(0x15);
-            newRecipe.requiredItem[0].stack = 12;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 4;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Silver Axe");
-            newRecipe.requiredItem[0].SetDefaults(0x15);
-            newRecipe.requiredItem[0].stack = 9;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Silver Hammer");
-            newRecipe.requiredItem[0].SetDefaults(0x15);
-            newRecipe.requiredItem[0].stack = 10;
-            newRecipe.requiredItem[1].SetDefaults(9);
-            newRecipe.requiredItem[1].stack = 3;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Silver Broadsword");
-            newRecipe.requiredItem[0].SetDefaults(0x15);
-            newRecipe.requiredItem[0].stack = 8;
-            addRecipe();
-            newRecipe.createItem.SetDefaults("Silver Shortsword");
-            newRecipe.requiredItem[0].SetDefaults(0x15);
-            newRecipe.requiredItem[0].stack = 7;
-            addRecipe();
+            if (num == Main.AvailableRecipe[num3])
+            {
+                Main.focusRecipe = num3;
+                break;
+            }
+
+            num3++;
         }
+
+        if (Main.focusRecipe >= Main.numAvailableRecipes)
+            Main.focusRecipe = Main.numAvailableRecipes - 1;
+
+        if (Main.focusRecipe < 0)
+            Main.focusRecipe = 0;
+
+        var num7 = Main.AvailableRecipeY[Main.focusRecipe] - num2;
+        for (num3 = 0; num3 < MaxRecipes; num3++)
+            Main.AvailableRecipeY[num3] -= num7;
+    }
+
+    public static void SetupRecipes()
+    {
+        newRecipe.CreateItem.SetDefaults(8);
+        newRecipe.CreateItem.Stack = 3;
+        newRecipe.RequiredItem[0].SetDefaults(0x17);
+        newRecipe.RequiredItem[0].Stack = 2;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x1a);
+        newRecipe.CreateItem.Stack = 4;
+        newRecipe.RequiredItem[0].SetDefaults(3);
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x19);
+        newRecipe.RequiredItem[0].SetDefaults(9);
+        newRecipe.RequiredItem[0].Stack = 5;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x18);
+        newRecipe.RequiredItem[0].SetDefaults(9);
+        newRecipe.RequiredItem[0].Stack = 7;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(20);
+        newRecipe.RequiredItem[0].SetDefaults(12);
+        newRecipe.RequiredItem[0].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Copper Pickaxe");
+        newRecipe.RequiredItem[0].SetDefaults(20);
+        newRecipe.RequiredItem[0].Stack = 12;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 4;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Copper Axe");
+        newRecipe.RequiredItem[0].SetDefaults(20);
+        newRecipe.RequiredItem[0].Stack = 9;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Copper Hammer");
+        newRecipe.RequiredItem[0].SetDefaults(20);
+        newRecipe.RequiredItem[0].Stack = 10;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Copper Broadsword");
+        newRecipe.RequiredItem[0].SetDefaults(20);
+        newRecipe.RequiredItem[0].Stack = 8;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Copper Shortsword");
+        newRecipe.RequiredItem[0].SetDefaults(20);
+        newRecipe.RequiredItem[0].Stack = 7;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x13);
+        newRecipe.RequiredItem[0].SetDefaults(13);
+        newRecipe.RequiredItem[0].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Gold Pickaxe");
+        newRecipe.RequiredItem[0].SetDefaults(0x13);
+        newRecipe.RequiredItem[0].Stack = 12;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 4;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Gold Axe");
+        newRecipe.RequiredItem[0].SetDefaults(0x13);
+        newRecipe.RequiredItem[0].Stack = 9;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Gold Hammer");
+        newRecipe.RequiredItem[0].SetDefaults(0x13);
+        newRecipe.RequiredItem[0].Stack = 10;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Gold Broadsword");
+        newRecipe.RequiredItem[0].SetDefaults(0x13);
+        newRecipe.RequiredItem[0].Stack = 8;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Gold Shortsword");
+        newRecipe.RequiredItem[0].SetDefaults(0x13);
+        newRecipe.RequiredItem[0].Stack = 7;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x16);
+        newRecipe.RequiredItem[0].SetDefaults(11);
+        newRecipe.RequiredItem[0].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(1);
+        newRecipe.RequiredItem[0].SetDefaults(0x16);
+        newRecipe.RequiredItem[0].Stack = 12;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(10);
+        newRecipe.RequiredItem[0].SetDefaults(0x16);
+        newRecipe.RequiredItem[0].Stack = 9;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(7);
+        newRecipe.RequiredItem[0].SetDefaults(0x16);
+        newRecipe.RequiredItem[0].Stack = 10;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(4);
+        newRecipe.RequiredItem[0].SetDefaults(0x16);
+        newRecipe.RequiredItem[0].Stack = 8;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(6);
+        newRecipe.RequiredItem[0].SetDefaults(0x16);
+        newRecipe.RequiredItem[0].Stack = 7;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults(0x15);
+        newRecipe.RequiredItem[0].SetDefaults(14);
+        newRecipe.RequiredItem[0].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Silver Pickaxe");
+        newRecipe.RequiredItem[0].SetDefaults(0x15);
+        newRecipe.RequiredItem[0].Stack = 12;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 4;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Silver Axe");
+        newRecipe.RequiredItem[0].SetDefaults(0x15);
+        newRecipe.RequiredItem[0].Stack = 9;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Silver Hammer");
+        newRecipe.RequiredItem[0].SetDefaults(0x15);
+        newRecipe.RequiredItem[0].Stack = 10;
+        newRecipe.RequiredItem[1].SetDefaults(9);
+        newRecipe.RequiredItem[1].Stack = 3;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Silver Broadsword");
+        newRecipe.RequiredItem[0].SetDefaults(0x15);
+        newRecipe.RequiredItem[0].Stack = 8;
+        AddRecipe();
+        newRecipe.CreateItem.SetDefaults("Silver Shortsword");
+        newRecipe.RequiredItem[0].SetDefaults(0x15);
+        newRecipe.RequiredItem[0].Stack = 7;
+        AddRecipe();
     }
 }
